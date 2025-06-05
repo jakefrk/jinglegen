@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JingleGen</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; justify-content: center; }
+        .app-container { width: 90%; max-width: 1200px; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { text-align: center; color: #333; }
+        
+        /* New styles for rectangular upload area */
+        .upload-area-rectangular {
+            border: 2px dashed #3399ff;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            cursor: pointer;
+            width: 80%;
+            max-width: 600px;
+            height: 60px;
+            background: linear-gradient(135deg, #e0f2ff 0%, #b3e0ff 100%);
+            box-shadow: 0 0 12px 0 rgba(51,153,255,0.12), 0 1px 4px 0 rgba(51,153,255,0.08);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            font-size: 1.1em;
+            color: #005fa3;
+            font-weight: 500;
+        }
+        .upload-area-rectangular:hover {
+            border-color: #005fa3;
+            box-shadow: 0 0 16px 0 rgba(51,153,255,0.20), 0 2px 8px 0 rgba(51,153,255,0.12);
+        }
+
+        /* Styles for curl command display */
+        .curl-command-display {
+            margin: 30px auto 20px auto; /* Increased top margin */
+            border-radius: 8px; /* Optional: Keep for consistency or remove */
+            width: 80%;
+            max-width: 700px;
+            padding: 0; /* Adjusted to 0, styling mainly on p and pre */
+        }
+        .curl-command-display p { /* This contains the "Or use cURL..." text */
+            margin-top: 0;
+            margin-bottom: 10px; /* Space between this text and the pre block */
+            font-size: 0.95em;
+            color: #333;
+            text-align: center; 
+        }
+        .curl-command-display pre { /* This is the dark box for the command */
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .spinner-icon {
+            font-size: 2em; /* Adjust size as needed */
+            display: inline-block; /* Allows transform */
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #fileName { margin-bottom: 10px; font-style: italic; text-align: center;}
+        .results-container { display: flex; flex-direction: row; gap: 20px; }
+        .results-column { flex: 1; padding: 15px; background-color: #e9e9e9; border-radius: 4px; }
+        .results-column h2 { margin-top: 0; font-size: 1.2em; }
+        .results-column pre { white-space: pre-wrap; font-family: monospace; font-size: 0.9em; background-color: #fdfdfd; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="container">
+            <h1>JingleGen</h1>
+            <h2>Audio-to-RTB </h2>
+            
+            <!-- New Rectangular Upload Area -->
+            <div class="upload-area-rectangular" id="dropZone"> 
+                <span class="upload-text">Drop Audio File Here or Click to Upload</span>
+                <span class="spinner-icon" style="display: none;">🎵</span>
+                <input type="file" id="fileInput" accept="audio/*" style="display: none;"> 
+            </div>
+            <p id="fileName" style="text-align: center; margin-top: 10px; font-style: italic;"></p> 
+            
+            <!-- Curl Command Display -->
+            <div class="curl-command-display">
+                <p style="text-align: center;"><strong>Or use cURL to get full JSON response (analysis + ORTB):</strong></p> 
+                <pre id="curlExample">curl -X POST -F "audioFile=@/path/to/your/audiofile.mp3" http://127.0.0.1:5000/analyze</pre>
+                <p style="font-size: 0.9em; color: #555; text-align: center; margin-top: 10px;">
+                    <em>Note: Only the first 15 seconds of audio will be processed. The first analysis after starting the server may also take a little longer.</em>
+                </p>
+                <p id="userFeedbackStatus" style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #333; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;"></p>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <div class="results-column" id="analysisResultsArea">
+                <h2>Raw Audio Analysis:</h2>
+                <p id="analysisStatus" style="font-size: 0.9em; color: #555;"></p>
+                <pre id="rawAnalysisOutput">Analysis details will appear here...</pre>
+            </div>
+            <div class="results-column" id="ortbRequestArea">
+                <h2>Mock ORTB Bid Request:</h2>
+                <pre id="ortbRequestOutput">ORTB request will appear here...</pre>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 30px; font-size: 0.85em; color: #555;">
+            Don't have a sound file, grab one from <a href="https://pixabay.com/music/search/open%20source/" target="_blank" rel="noopener noreferrer">here</a>.
+        </p>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+        const rawAnalysisOutput = document.getElementById('rawAnalysisOutput');
+        const ortbRequestOutput = document.getElementById('ortbRequestOutput');
+        const analysisStatusDisplay = document.getElementById('analysisStatus');
+        const uploadText = dropZone.querySelector('.upload-text');
+        const spinnerIcon = dropZone.querySelector('.spinner-icon');
+        const userFeedbackStatus = document.getElementById('userFeedbackStatus');
+        
+        let currentFile = null;
+
+        const MAX_FILE_SIZE_MB = 5;
+        const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+        const API_ENDPOINT = "http://127.0.0.1:5000/analyze";
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#333'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#ccc'; });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ccc';
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function displayError(message, area = "raw") {
+            const errorMsg = `<span style="color: red;">Error: ${message}</span>`;
+            if (area === "raw" || area === "both") rawAnalysisOutput.innerHTML = errorMsg;
+            if (area === "ortb" || area === "both") ortbRequestOutput.innerHTML = errorMsg;
+            analysisStatusDisplay.textContent = 'Error processing file.';
+            
+            if (userFeedbackStatus && currentFile) {
+                userFeedbackStatus.textContent = `Error processing ${currentFile.name}.`;
+            } else if (userFeedbackStatus) {
+                userFeedbackStatus.textContent = 'An error occurred during processing.';
+            }
+
+            if (uploadText) uploadText.style.display = 'inline-block';
+            if (spinnerIcon) spinnerIcon.style.display = 'none';
+        }
+
+        function formatRawAnalysisForDisplay(analysisData) {
+            let textString = "MOOD & ENERGY:\n";
+            textString += `  Energy Level: ${analysisData.mood_energy?.interpreted_energy || 'N/A'}\n`;
+            textString += `  Brightness: ${analysisData.mood_energy?.interpreted_brightness || 'N/A'}\n`;
+            textString += `  Spectral Rolloff: ${analysisData.mood_energy?.spectral_rolloff?.toFixed(2) || 'N/A'}\n`;
+            textString += `  Spectral Bandwidth: ${analysisData.mood_energy?.spectral_bandwidth?.toFixed(2) || 'N/A'}\n\n`;
+
+            textString += "INSTRUMENT ANALYSIS:\n";
+            textString += `  Instrument Type: ${analysisData.instrument_analysis?.interpreted_instrument_type || 'N/A'}\n`;
+            textString += `  Harmonic Ratio: ${analysisData.instrument_analysis?.harmonic_ratio?.toFixed(2) || 'N/A'}\n`;
+            textString += `  Mean Harmonic Energy: ${analysisData.instrument_analysis?.harmonic_energy_mean?.toExponential(2) || 'N/A'}\n`;
+            textString += `  Mean Percussive Energy: ${analysisData.instrument_analysis?.percussive_energy_mean?.toExponential(2) || 'N/A'}\n\n`;
+
+            textString += "MUSICAL CHARACTERISTICS:\n";
+            textString += `  Tempo: ${analysisData.musical_characteristics?.tempo_bpm || 'N/A'} BPM\n`;
+            textString += `  Style: ${analysisData.musical_characteristics?.interpreted_style || 'N/A'}\n`;
+            textString += `  Mean Onset Strength: ${analysisData.musical_characteristics?.onset_strength_mean?.toFixed(2) || 'N/A'}\n\n`;
+
+            textString += "RHYTHM ANALYSIS:\n";
+            textString += `  Beat Density: ${analysisData.rhythm_analysis?.interpreted_beat_density || 'N/A'}\n`;
+            textString += `  Onset Count: ${analysisData.rhythm_analysis?.onset_count || 'N/A'}\n`;
+            textString += `  Rhythm Density (Onsets/sec): ${analysisData.rhythm_analysis?.rhythm_density_onsets_per_sec?.toFixed(2) || 'N/A'}\n\n`;
+            
+            // New Transcription Section
+            textString += "TRANSCRIPTION:\n";
+            textString += `  Transcribed Text: ${analysisData.transcription?.text || '(Transcription service not supported)'}\n`;
+
+            return textString;
+        }
+
+        function generateOrtbRequestFromAnalysis(analysisData, transcribedText = "") {
+            // Helper to safely get nested properties
+            const getProp = (obj, path, defaultValue = 'N/A') => {
+                const value = path.split('.').reduce((acc, part) => acc && acc[part], obj);
+                return value === undefined || value === null ? defaultValue : value;
+            };
+
+            const ortbSignals = {
+                "energy_level": getProp(analysisData, 'mood_energy.interpreted_energy'),
+                "brightness": getProp(analysisData, 'mood_energy.interpreted_brightness'),
+                "instrument_type": getProp(analysisData, 'instrument_analysis.interpreted_instrument_type'),
+                "tempo_bpm": getProp(analysisData, 'musical_characteristics.tempo_bpm', 0),
+                "style": getProp(analysisData, 'musical_characteristics.interpreted_style'),
+                "beat_density": getProp(analysisData, 'rhythm_analysis.interpreted_beat_density'),
+                "onset_count": getProp(analysisData, 'rhythm_analysis.onset_count', 0)
+            };
+
+            // Note: Transcription is not part of the current Python analysis results being sent.
+            // if (transcribedText) { 
+            //     ortbSignals["transcribed_text_snippet"] = transcribedText.substring(0, 256);
+            // }
+
+            return {
+                "id": `bid-${new Date().toISOString().replace(/[-:.]/g, "")}`,
+                "imp": [{
+                    "id": "1",
+                    "audio": {
+                        "mimes": ["audio/mpeg", "audio/wav"], 
+                        "minduration": 1,
+                        "maxduration": 5, 
+                    },
+                    "ext": {
+                        "custom_audio_signals": ortbSignals 
+                    }
+                }],
+                "app": { 
+                    "id": "jinglegen-app-v1-local",
+                    "name": "JingleGen Audio Analyzer (Local Demo)",
+                    "bundle": "com.example.jinglegen.local",
+                    "publisher": {
+                        "id": "pub-local-12345",
+                        "name": "JingleGen Publisher (Local)"
+                    }
+                },
+                "device": {
+                    "ua": navigator.userAgent, 
+                    "ip": "127.0.0.1",   
+                    "devicetype": 2, 
+                    "os": navigator.platform 
+                },
+                "user": { 
+                    "id": `local-user-${Math.random().toString(36).substring(2, 15)}`
+                },
+                "at": 1, 
+                "tmax": 200,
+                "regs": { 
+                    "coppa": 0, 
+                    "ext": { "gdpr": 0 }
+                }
+            };
+        }
+
+        async function handleFile(file) {
+            rawAnalysisOutput.innerHTML = '';
+            ortbRequestOutput.innerHTML = '';
+            currentFile = file;
+
+            if (userFeedbackStatus) userFeedbackStatus.textContent = `Selected file: ${file.name}`;
+
+            if (!file.type.startsWith('audio/')) {
+                displayError("Invalid file type. Please upload an audio file.", "both");
+                if (uploadText) uploadText.style.display = 'inline-block';
+                if (spinnerIcon) spinnerIcon.style.display = 'none';
+                return;
+            }
+            if (file.size > MAX_FILE_SIZE_BYTES) {
+                displayError(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`, "both");
+                if (uploadText) uploadText.style.display = 'inline-block';
+                if (spinnerIcon) spinnerIcon.style.display = 'none';
+                return;
+            }
+            
+            if (uploadText) uploadText.style.display = 'none';
+            if (spinnerIcon) spinnerIcon.style.display = 'inline-block';
+            if (userFeedbackStatus) userFeedbackStatus.textContent = `Processing... ${file.name}`;
+            
+            const audio = new Audio(URL.createObjectURL(file));
+            audio.onloadedmetadata = async () => {
+                URL.revokeObjectURL(audio.src);
+                if (audio.duration > 600) { 
+                    displayError("Audio duration is very long. The first 15s will be processed by the server.", "raw");
+                }
+
+                try {
+                    if (API_ENDPOINT === "YOUR_API_GATEWAY_ENDPOINT_URL_HERE") {
+                        rawAnalysisOutput.innerHTML = `<span style="color: orange;">API Endpoint not configured. Displaying mock data.</span><br><br>`;
+                        setTimeout(() => {
+                            const mockAudioFeatures = {
+                                "mood_energy": {"interpreted_energy": "High", "interpreted_brightness": "Bright", "spectral_rolloff": 3500.50, "spectral_bandwidth": 2200.75},
+                                "instrument_analysis": {"interpreted_instrument_type": "Melodic", "harmonic_ratio": 0.75, "harmonic_energy_mean": 0.05, "percussive_energy_mean": 0.01},
+                                "musical_characteristics": {"tempo_bpm": 136, "interpreted_style": "Fast-paced", "onset_strength_mean": 1.5},
+                                "rhythm_analysis": {"interpreted_beat_density": "Medium", "onset_count": 4, "rhythm_density_onsets_per_sec": 2.0},
+                                "transcription": {"text": "JingleGen radio, playing all the hits! Get your demo today."}
+                            };
+
+                            const mockSelectedSignalsForOrtb = {
+                                "energy_level": mockAudioFeatures.mood_energy.interpreted_energy,
+                                "brightness": mockAudioFeatures.mood_energy.interpreted_brightness,
+                                "instrument_type": mockAudioFeatures.instrument_analysis.interpreted_instrument_type,
+                                "tempo_bpm": mockAudioFeatures.musical_characteristics.tempo_bpm,
+                                "style": mockAudioFeatures.musical_characteristics.interpreted_style,
+                                "beat_density": mockAudioFeatures.rhythm_analysis.interpreted_beat_density,
+                                "onset_count": mockAudioFeatures.rhythm_analysis.onset_count,
+                                "transcribed_text_snippet": (mockAudioFeatures.transcription.text || "").substring(0, 256)
+                            };
+
+                            const mockOrtbRequest = {
+                                "id": `mock-bid-${new Date().getTime()}`,
+                                "imp": [{
+                                    "id": "1",
+                                    "audio": {"mimes": ["audio/mpeg", "audio/wav"], "minduration": 1, "maxduration": 5},
+                                    "ext": {
+                                        "custom_audio_signals": mockSelectedSignalsForOrtb
+                                    }
+                                }],
+                                "app": {
+                                    "id": "jinglegen-app-v1", "name": "JingleGen Demo", "bundle": "com.example.jinglegen",
+                                    "publisher": {"id": "pub-12345", "name": "JingleGen Publisher"}
+                                },
+                                "device": {"ua": "Chrome/100.0", "ip": "192.168.1.10", "devicetype": 2, "os": "MacOS"},
+                                "user": {"id": "test-user-001"},
+                                "at": 1,
+                                "tmax": 200,
+                                "regs": {"ext": {"gdpr": 0}}
+                            };
+
+                            const currentMessage = rawAnalysisOutput.innerHTML;
+                            rawAnalysisOutput.textContent = formatRawAnalysisForDisplay(mockAudioFeatures);
+                            rawAnalysisOutput.innerHTML = currentMessage + rawAnalysisOutput.textContent;
+
+                            ortbRequestOutput.textContent = JSON.stringify(mockOrtbRequest, null, 2);
+                        }, 500);
+                        if (uploadText) uploadText.style.display = 'inline-block';
+                        if (spinnerIcon) spinnerIcon.style.display = 'none';
+                        return;
+                    }
+
+                    const formDataForFlask = new FormData();
+                    formDataForFlask.append('audioFile', file);
+
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        body: formDataForFlask
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                        throw new Error(`API Error (${response.status}): ${errorData.error}`);
+                    }
+
+                    const data = await response.json();
+                    rawAnalysisOutput.textContent = formatRawAnalysisForDisplay(data.audio_analysis);
+                    const ortbRequestForUI = generateOrtbRequestFromAnalysis(data.audio_analysis);
+                    ortbRequestOutput.textContent = JSON.stringify(ortbRequestForUI, null, 2);
+                    if (userFeedbackStatus && currentFile) userFeedbackStatus.textContent = `Analysis completed for ${currentFile.name}`;
+                    
+                } catch (err) {
+                    displayError(err.message, "both");
+                } finally {
+                    if (uploadText) uploadText.style.display = 'inline-block';
+                    if (spinnerIcon) spinnerIcon.style.display = 'none';
+                }
+            };
+            audio.onerror = () => {
+                displayError("Could not load audio file metadata.", "both");
+                if (uploadText) uploadText.style.display = 'inline-block';
+                if (spinnerIcon) spinnerIcon.style.display = 'none';
+                if (userFeedbackStatus && currentFile) {
+                    userFeedbackStatus.textContent = `Error loading metadata for ${currentFile.name}.`;
+                } else if (userFeedbackStatus) {
+                    userFeedbackStatus.textContent = 'Error loading audio metadata.';
+                }
+            };
+        }
+    </script>
+</body>
+</html> 
