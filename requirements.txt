@@ -1,20 +1,24 @@
-# JingleJen Application Dependencies
-# For local execution with Python 3.10.x
+# AWS Lambda (Container Image) requirements for JingleGen V2
+# Based on Python 3.10.x compatible versions
 
-Flask==3.1.1
 librosa==0.10.1
+
+# Explicitly listing key dependencies of librosa with versions known to be compatible:
 numpy==1.26.4
-scipy==1.11.4      # Crucial for librosa 0.10.1 compatibility
-numba==0.61.2      # For librosa performance
-llvmlite==0.44.0   # For numba
+scipy==1.11.4
+# Pinning numba and llvmlite to versions known for better compatibility
+numba==0.58.1
+llvmlite==0.41.1
+soundfile==0.13.1
+audioread==3.0.1   # For loading audio files
+pydub==0.25.1
+scikit-learn==1.6.1 # For utilities used by librosa
+joblib==1.5.1      # Often a dependency of scikit-learn or librosa directly
+
+# Other direct dependencies might be resolved by pip, 
+# but these are core to the scientific stack used by librosa.
 
 # Core dependencies often pulled in by librosa, but good to specify:
-audioread==3.0.1
-soundfile==0.13.1
-joblib==1.5.1
-scikit-learn==1.6.1 # Librosa uses this for some utilities
-
-# Dependencies of Flask, good to have for consistency:
 Werkzeug==3.1.3
 Jinja2==3.1.6
 itsdangerous==2.2.0

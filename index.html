@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JingleGen</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; justify-content: center; }
+        .app-container { width: 90%; max-width: 1200px; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { text-align: center; color: #333; }
+        
+ 
+        .upload-area-rectangular {
+            border: 2px dashed #3399ff;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            cursor: pointer;
+            width: 80%;
+            max-width: 600px;
+            height: 60px;
+            background: linear-gradient(135deg, #e0f2ff 0%, #b3e0ff 100%);
+            box-shadow: 0 0 12px 0 rgba(51,153,255,0.12), 0 1px 4px 0 rgba(51,153,255,0.08);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            font-size: 1.1em;
+            color: #005fa3;
+            font-weight: 500;
+        }
+        .upload-area-rectangular.dragover {
+            border-color: #005fa3;
+            box-shadow: 0 0 16px 0 rgba(51,153,255,0.20), 0 2px 8px 0 rgba(51,153,255,0.12);
+        }
+
+        /* Styles for curl command display */
+        .curl-command-display {
+            margin: 30px auto 20px auto;  
+            border-radius: 8px;  
+            width: 80%;
+            max-width: 700px;
+            padding: 0;  
+        }
+        .curl-command-display p {  
+            margin-top: 0;
+            margin-bottom: 10px;  
+            font-size: 0.95em;
+            color: #333;
+            text-align: center; 
+        }
+        .curl-command-display pre {  
+            background-color: #343a40;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .spinner-icon {
+            font-size: 2em; 
+            display: inline-block; 
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #fileName { margin-bottom: 10px; font-style: italic; text-align: center;}
+        .results-container { display: flex; flex-direction: row; gap: 20px; }
+        .results-column { flex: 1; padding: 15px; background-color: #e9e9e9; border-radius: 4px; }
+        .results-column h2 { margin-top: 0; font-size: 1.2em; }
+        .results-column pre { white-space: pre-wrap; font-family: monospace; font-size: 0.9em; background-color: #fdfdfd; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="container">
+            <h1>JingleGen</h1>
+            <h2>Cloud Audio Analyzer</h2>
+            
+            <!-- New Rectangular Upload Area -->
+            <div class="upload-area-rectangular" id="dropZone"> 
+                <span class="upload-text">Drop Audio File Here or Click to Upload</span>
+                <span class="spinner-icon" style="display: none;">🎵</span>
+                <input type="file" id="fileInput" accept="audio/*" style="display: none;"> 
+            </div>
+            <p id="fileName"></p> 
+            <p id="userFeedbackStatus"></p>
+            
+            <!-- Curl Command Display -->
+            <div class="curl-command-display">
+                <p><strong>Or use cURL (returns ORTB request only):</strong></p> 
+                <pre id="curlExample">https://jinglegen.com/analyze</pre>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <div class="results-column" id="analysisResultsArea">
+                <h2>Raw Audio Analysis:</h2>
+                <pre id="rawAnalysisOutput"></pre>
+            </div>
+            <div class="results-column" id="ortbRequestArea">
+                <h2>Mock ORTB Bid Request:</h2>
+                <pre id="ortbRequestOutput"></pre>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 30px; font-size: 0.85em; color: #555;">
+            Don't have a sound file? Grab one from <a href="https://pixabay.com/music/search/open%20source/" target="_blank" rel="noopener noreferrer">here</a>.
+            <br>
+            <hr>
+            <smalL>https://github.com/jakefrk/jinglegen</smalL>
+        </p>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // IMPORTANT: Replace these placeholders with your actual API Gateway details
+        const API_INVOKE_URL = 'https://jinglegen.com/analyze'; 
+        const API_KEY = 'cdUPQUUBW63nwZf9S4B598t7VQVuDuyU64aFoohL'; /* im aware this is in here */
+
+        // --- DOM ELEMENTS ---
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+        const userFeedbackStatus = document.getElementById('userFeedbackStatus');
+        const rawAnalysisOutput = document.getElementById('rawAnalysisOutput');
+        const ortbRequestOutput = document.getElementById('ortbRequestOutput');
+        const curlExample = document.getElementById('curlExample');
+        const uploadText = dropZone.querySelector('.upload-text');
+        const spinnerIcon = dropZone.querySelector('.spinner-icon');
+
+        // --- INITIALIZATION ---
+        function initializeApp() {
+            if (API_INVOKE_URL && !API_INVOKE_URL.includes('YOUR_API')) {
+                 curlExample.textContent = `curl -X POST "${API_INVOKE_URL}" \\\n     -H "Content-Type: application/json" \\\n     -H "x-api-key: ${API_KEY || 'YOUR_API_KEY'}" \\\n     -d '{"filename": "test.mp3", "audio_data": "BASE64_AUDIO_STRING"}'`;
+            } else {
+                curlExample.textContent = "Please configure your API Invoke URL in the HTML file.";
+                curlExample.style.color = "red";
+            }
+        }
+        
+        // --- EVENT LISTENERS ---
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => e.target.files.length && handleFile(e.target.files[0]));
+        
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            e.dataTransfer.files.length && handleFile(e.dataTransfer.files[0]);
+        });
+
+        // --- FILE HANDLING ---
+        function handleFile(file) {
+            resetUIForNewUpload(file.name);
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const audio_bytes = e.target.result;
+                // Use btoa for base64 encoding
+                const audio_base64 = btoa(new Uint8Array(audio_bytes).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                callApi(audio_base64, file.name);
+            };
+
+            reader.onerror = (error) => displayError(`File reading failed: ${error}`);
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- API CALL ---
+        async function callApi(audioData, fileName) {
+            if (!API_INVOKE_URL || API_INVOKE_URL.includes('YOUR_API')) {
+                displayError("API endpoint is not configured in the HTML file.");
+                setLoadingState(false);
+                return;
+            }
+
+            try {
+                const response = await fetch(API_INVOKE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        audio_data: audioData,
+                        filename: fileName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || result.error || 'Unknown error occurred');
+                }
+                
+                displaySuccess(result);
+
+            } catch (error) {
+                console.error('API call error:', error);
+                displayError(`API Call Failed: ${error.message}`);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        // --- UI UPDATES ---
+        function resetUIForNewUpload(name) {
+            fileNameDisplay.textContent = `Processing: ${name}`;
+            userFeedbackStatus.textContent = "Analyzing...";
+            rawAnalysisOutput.textContent = "";
+            ortbRequestOutput.textContent = "";
+            setLoadingState(true);
+        }
+
+        function setLoadingState(isLoading) {
+            uploadText.style.display = isLoading ? 'none' : 'inline-block';
+            spinnerIcon.style.display = isLoading ? 'inline-block' : 'none';
+        }
+        
+        function displayError(message) {
+            userFeedbackStatus.textContent = 'Error!';
+            ortbRequestOutput.textContent = message;
+            rawAnalysisOutput.textContent = message;
+        }
+
+        function displaySuccess(data) {
+            userFeedbackStatus.textContent = 'Analysis Complete!';
+            // The lambda now returns the full object. We can parse it here.
+            rawAnalysisOutput.textContent = JSON.stringify(data.audio_analysis, null, 2);
+            ortbRequestOutput.textContent = JSON.stringify(data.ortb_request, null, 2);
+        }
+
+        // --- RUN APP ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+</body>
+</html> 

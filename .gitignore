@@ -106,8 +106,6 @@ uploads/
 .vscode/
 
 # Old Lambda and Docker artifacts
-Dockerfile
-lambda_function.py
 custom_layer_content/
 custom_layer_requirements.txt
 lambda/ 
