@@ -30,6 +30,9 @@
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         /* Background Animation */
@@ -68,6 +71,13 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .main-content {
+            flex-grow: 1;
         }
 
         /* Header */
@@ -390,47 +400,48 @@
             <p class="subtitle">JingleGen generates an ORTB bid request snippet from analyzed audio to simulate a supply-side contextual targeting engine in a programmatic advertising ecosystem. DSPs can receive the returned ORTB data, bid on it, and/or use ML/AI to return audio creatives that appropriately match the audio content of the inventory for a better, less-intrusive listener experience.</p>
         </header>
 
-        <!-- Upload Section -->
-        <section class="upload-section">
-            <div class="upload-card">
-                <div class="upload-area" id="dropZone">
-                    <input type="file" id="fileInput" accept="audio/*" style="display: none;">
-                    <div class="upload-content" id="uploadContent">
-                        <span class="upload-icon">🎵</span>
-                        <div class="upload-text">Drop Audio File Here</div>
-                        <div class="upload-subtext">or click to browse</div>
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-card">
+                    <div class="upload-area" id="dropZone">
+                        <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+                        <div class="upload-content" id="uploadContent">
+                            <span class="upload-icon">🎵</span>
+                            <div class="upload-text">Drop Audio File Here</div>
+                        </div>
+                        <div class="spinner-icon" style="display: none;">🎵</div>
                     </div>
-                    <div class="spinner-icon" style="display: none;">🎵</div>
+                    <div class="status-display" id="statusDisplay">
+                        Only the first 10 seconds of audio will be analyzed. If an error occurs on first upload, please retry (restarts cold start timeout).
+                    </div>
                 </div>
-                <div class="status-display" id="statusDisplay">
-                    Only the first 10 seconds of audio will be analyzed. If an error occurs on first upload, please retry (restarts cold start timeout).
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- API Documentation Section -->
-        <section class="api-section">
-                <div class="curl-display">
-                    <pre id="curlExample">curl -X POST "https://api.jinglegen.com/analyze" \
+            <!-- API Documentation Section -->
+            <section class="api-section">
+                    <div class="curl-display">
+                        <pre id="curlExample">curl -X POST "https://api.jinglegen.com/analyze" \
      -H "Content-Type: application/json" \
      -H "x-api-key: YOUR_API_KEY" \
      -d '{"filename": "audio.mp3", "audio_data": "BASE64_STRING"}'</pre>
-            </div>
-        </section>
+                </div>
+            </section>
 
-        <!-- Results Section -->
-        <section class="results-section" id="resultsSection">
-            <div class="results-grid">
-                <div class="result-card">
-                    <h3>🎤 Audio Analysis</h3>
-                    <div class="result-output" id="rawAnalysisOutput">Waiting for audio upload...</div>
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection">
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h3>🎤 Audio Analysis</h3>
+                        <div class="result-output" id="rawAnalysisOutput">Waiting for audio upload...</div>
+                    </div>
+                    <div class="result-card">
+                        <h3>📊 ORTB Bid Request</h3>
+                        <div class="result-output" id="ortbRequestOutput">Waiting for audio upload...</div>
+                    </div>
                 </div>
-                <div class="result-card">
-                    <h3>📊 ORTB Bid Request</h3>
-                    <div class="result-output" id="ortbRequestOutput">Waiting for audio upload...</div>
-                </div>
-            </div>
-        </section>
+            </section>
+        </main>
 
         <!-- Footer -->
         <footer class="footer">
