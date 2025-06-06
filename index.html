@@ -90,17 +90,16 @@
             
             <!-- New Rectangular Upload Area -->
             <div class="upload-area-rectangular" id="dropZone"> 
-                <span class="upload-text">Drop Audio File Here or Click to Upload</span>
+                <span class="upload-text">Drop Audio File Here </span>
                 <span class="spinner-icon" style="display: none;">🎵</span>
                 <input type="file" id="fileInput" accept="audio/*" style="display: none;"> 
             </div>
-            <p id="statusDisplay" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 1.1em; height: 1.2em;"></p>
             
             <!-- Curl Command Display -->
-            <div class="curl-command-display">
-                <p><strong>Or use cURL (returns ORTB request only):</strong></p> 
+            <div class="curl-command-display"> 
                 <pre id="curlExample">https://jinglegen.com/analyze</pre>
             </div>
+            <p id="statusDisplay" style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #555;">Only first 10 seconds of audio will be analyzed. If error occurs on first upload, please re-try (restarts cold start timeout).</p>
         </div>
 
         <div class="results-container">
@@ -109,7 +108,7 @@
                 <pre id="rawAnalysisOutput"></pre>
             </div>
             <div class="results-column" id="ortbRequestArea">
-                <h2>Mock ORTB Bid Request:</h2>
+                <h2>ORTB Bid Request:</h2>
                 <pre id="ortbRequestOutput"></pre>
             </div>
         </div>
@@ -227,10 +226,9 @@
         }
         
         function displayError(message) {
-            statusDisplay.textContent = 'Error!';
+            statusDisplay.textContent = `Error: ${message}`;
             statusDisplay.style.color = 'red';
-            ortbRequestOutput.textContent = message;
-            rawAnalysisOutput.textContent = message;
+            setLoadingState(false);
         }
 
         function displaySuccess(data) {
