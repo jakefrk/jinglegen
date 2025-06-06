@@ -1,6 +1,6 @@
 # JingleGen
 
-Generates ORTB bid request snippet from analyzed audio to simulate a supply-side contextual targeting engine in a programmatic advertising ecosystem. Conceptually, a DSP could receive the returned ORTB data and by using ML/AI, returns an audio creative that appropriately matches the audio content of the viewer/listener. 
+[**JingleGen.com**](https://jinglegen.com) generates ORTB bid request snippet from analyzed audio to simulate a supply-side contextual targeting engine in a programmatic advertising ecosystem. Conceptually, a DSP could receive the returned ORTB data and by using ML/AI, returns an audio creative that appropriately matches the audio content of the viewer/listener. 
 
 
 ## Features

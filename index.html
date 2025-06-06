@@ -3,71 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JingleGen</title>
+    <title>JingleGen - Audio Intelligence for Programmatic Advertising</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; justify-content: center; }
-        .app-container { width: 90%; max-width: 1200px; }
-        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1, h2 { text-align: center; color: #333; }
-        
- 
-        .upload-area-rectangular {
-            border: 2px dashed #3399ff;
-            padding: 20px;
-            text-align: center;
-            margin: 20px auto;
-            cursor: pointer;
-            width: 80%;
-            max-width: 600px;
-            height: 60px;
-            background: linear-gradient(135deg, #e0f2ff 0%, #b3e0ff 100%);
-            box-shadow: 0 0 12px 0 rgba(51,153,255,0.12), 0 1px 4px 0 rgba(51,153,255,0.08);
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: box-shadow 0.2s, border-color 0.2s;
-            font-size: 1.1em;
-            color: #005fa3;
-            font-weight: 500;
-        }
-        .upload-area-rectangular.dragover {
-            border-color: #005fa3;
-            box-shadow: 0 0 16px 0 rgba(51,153,255,0.20), 0 2px 8px 0 rgba(51,153,255,0.12);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Styles for curl command display */
-        .curl-command-display {
-            margin: 30px auto 20px auto;  
-            border-radius: 8px;  
-            width: 80%;
-            max-width: 700px;
-            padding: 0;  
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-bg: #0f0f23;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --shadow-color: rgba(0, 0, 0, 0.3);
         }
-        .curl-command-display p {  
-            margin-top: 0;
-            margin-bottom: 10px;  
-            font-size: 0.95em;
-            color: #333;
-            text-align: center; 
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
-        .curl-command-display pre {  
-            background-color: #343a40;
-            color: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: monospace;
-            font-size: 0.9em;
-            white-space: pre-wrap;
-            word-break: break-all;
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            opacity: 0.1;
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+            animation: backgroundFloat 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundFloat {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0 15px;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .upload-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px var(--shadow-color);
+        }
+
+        .upload-area {
+            border: 1px dashed rgba(79, 172, 254, 0.5);
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+            padding: 30px 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(79, 172, 254, 0.2) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .upload-area.dragover {
+            border-color: #4facfe;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2) 0%, rgba(0, 242, 254, 0.2) 100%);
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+
+        .upload-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+            opacity: 0.8;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .upload-subtext {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .spinner-icon {
-            font-size: 2em; 
-            display: inline-block; 
-            animation: spin 1.5s linear infinite;
+            font-size: 2rem;
+            animation: spin 2s linear infinite;
         }
 
         @keyframes spin {
@@ -75,109 +188,335 @@
             100% { transform: rotate(360deg); }
         }
 
-        #fileName { margin-bottom: 10px; font-style: italic; text-align: center;}
-        .results-container { display: flex; flex-direction: row; gap: 20px; }
-        .results-column { flex: 1; padding: 15px; background-color: #e9e9e9; border-radius: 4px; }
-        .results-column h2 { margin-top: 0; font-size: 1.2em; }
-        .results-column pre { white-space: pre-wrap; font-family: monospace; font-size: 0.9em; background-color: #fdfdfd; padding: 10px; border-radius: 4px; }
+        /* Status Display */
+        .status-display {
+            margin-top: 15px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        /* API Section */
+        .api-section {
+            margin: 15px 0;
+        }
+
+        .api-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+        }
+
+        .api-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .curl-display {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 15px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            color: #64ffda;
+            overflow-x: auto;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            position: relative;
+        }
+
+        .curl-display::before {
+            content: '$ ';
+            color: #ff6b6b;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin: 15px 0;
+            opacity: 30%;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+        }
+
+        .results-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+            transition: transform 0.3s ease;
+        }
+
+
+        .result-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-output {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 20px;
+            padding: 20px 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-description {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+
+        .footer-link {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+        }
+
+        .footer-link:hover {
+            color: var(--text-primary);
+            background: var(--accent-gradient);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .upload-card {
+                padding: 30px 20px;
+            }
+
+            .upload-area {
+                padding: 40px 20px;
+            }
+
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-gradient);
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="container">
-            <h1>JingleGen</h1>
-            <h2>Audio to ORTB</h2>
-            
-            <!-- New Rectangular Upload Area -->
-            <div class="upload-area-rectangular" id="dropZone"> 
-                <span class="upload-text">Drop Audio File Here </span>
-                <span class="spinner-icon" style="display: none;">🎵</span>
-                <input type="file" id="fileInput" accept="audio/*" style="display: none;"> 
-            </div>
-            
-            <!-- Curl Command Display -->
-            <div class="curl-command-display"> 
-                <pre id="curlExample">https://jinglegen.com/analyze</pre>
-            </div>
-            <p id="statusDisplay" style="text-align: center; margin-top: 20px; font-size: 0.9em; color: #555;">Only first 10 seconds of audio will be analyzed. If error occurs on first upload, please re-try (restarts cold start timeout).</p>
-        </div>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1 class="title">JingleGen</h1>
+            <p class="subtitle">JingleGen generates an ORTB bid request snippet from analyzed audio to simulate a supply-side contextual targeting engine in a programmatic advertising ecosystem. DSPs can receive the returned ORTB data, bid on it, and/or use ML/AI to return audio creatives that appropriately match the audio content of the inventory for a better, less-intrusive listener experience.</p>
+        </header>
 
-        <div class="results-container">
-            <div class="results-column" id="analysisResultsArea">
-                <h2>Audio Analysis:</h2>
-                <pre id="rawAnalysisOutput"></pre>
+        <!-- Upload Section -->
+        <section class="upload-section">
+            <div class="upload-card">
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-content">
+                        <span class="upload-icon">🎧</span>
+                        <div class="upload-text">Drop your audio file here</div>
+                        <div class="spinner-icon" style="display: none;">🎵</div>
+                    </div>
+                    <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+                </div>
+                <div class="status-display" id="statusDisplay">
+                    Only the first 10 seconds of audio will be analyzed. If an error occurs on first upload, please retry (restarts cold start timeout).
+                </div>
             </div>
-            <div class="results-column" id="ortbRequestArea">
-                <h2>ORTB Bid Request:</h2>
-                <pre id="ortbRequestOutput"></pre>
+        </section>
+
+        <!-- API Documentation Section -->
+        <section class="api-section">
+                <div class="curl-display">
+                    <pre id="curlExample">curl -X POST "https://api.jinglegen.com/analyze" \
+     -H "Content-Type: application/json" \
+     -H "x-api-key: YOUR_API_KEY" \
+     -d '{"filename": "audio.mp3", "audio_data": "BASE64_STRING"}'</pre>
             </div>
-        </div>
-        <p style="text-align: left; margin-top: 30px; font-size: 0.65em; color: #666;">
-            Don't have a sound file? Grab one from <a href="https://pixabay.com/music/search/open%20source/" target="_blank" rel="noopener noreferrer">here</a>.
-            <br>
-            <hr>
-            <smalL style="text-align: center">https://github.com/jakefrk/jinglegen</smalL>
-        </p>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection">
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>🎤 Audio Analysis</h3>
+                    <div class="result-output" id="rawAnalysisOutput">Waiting for audio upload...</div>
+                </div>
+                <div class="result-card">
+                    <h3>📊 ORTB Bid Request</h3>
+                    <div class="result-output" id="ortbRequestOutput">Waiting for audio upload...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+            
+                <div class="footer-links">
+                    <a href="https://pixabay.com/music/search/open%20source/" target="_blank" rel="noopener noreferrer" class="footer-link">Get A Sample Audio</a>
+                    <a href="https://github.com/jakefrk/jinglegen" target="_blank" rel="noopener noreferrer" class="footer-link">
+                    View on GitHub
+                </a>
+              </div>
+            </div>
+        </footer>
     </div>
 
     <script>
-        console.log("--- JINGLEGEN JS (v2) ---");
-        // --- CONFIGURATION ---
-        const API_INVOKE_URL = 'https://api.jinglegen.com/analyze'; 
-        const API_KEY = 'cdUPQUUBW63nwZf9S4B598t7VQVuDuyU64aFoohL'; /* im aware this is in here */
+        console.log("--- JINGLEGEN JS (Enhanced) ---");
+        
+        // Configuration
+        const API_INVOKE_URL = 'https://api.jinglegen.com/analyze';
+        const API_KEY = 'cdUPQUUBW63nwZf9S4B598t7VQVuDuyU64aFoohL';
 
-        // --- DOM ELEMENTS ---
+        // DOM Elements
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const statusDisplay = document.getElementById('statusDisplay');
         const rawAnalysisOutput = document.getElementById('rawAnalysisOutput');
         const ortbRequestOutput = document.getElementById('ortbRequestOutput');
         const curlExample = document.getElementById('curlExample');
+        const resultsSection = document.getElementById('resultsSection');
+        const uploadIcon = dropZone.querySelector('.upload-icon');
         const uploadText = dropZone.querySelector('.upload-text');
+        const uploadSubtext = dropZone.querySelector('.upload-subtext');
         const spinnerIcon = dropZone.querySelector('.spinner-icon');
 
-        // --- INITIALIZATION ---
+        // Initialization
         function initializeApp() {
             if (API_INVOKE_URL && !API_INVOKE_URL.includes('YOUR_API')) {
-                 curlExample.textContent = `curl -X POST "${API_INVOKE_URL}" \\\n     -H "Content-Type: application/json" \\\n     -H "x-api-key: ${API_KEY || 'YOUR_API_KEY'}" \\\n     -d '{"filename": "test.mp3", "audio_data": "BASE64_AUDIO_STRING"}'`;
+                curlExample.textContent = `curl -X POST "${API_INVOKE_URL}" \\\n     -H "Content-Type: application/json" \\\n     -H "x-api-key: ${API_KEY || 'YOUR_API_KEY'}" \\\n     -d '{"filename": "audio.mp3", "audio_data": "BASE64_STRING"}'`;
             } else {
-                curlExample.textContent = "Please configure your API Invoke URL in the HTML file.";
-                curlExample.style.color = "red";
+                curlExample.textContent = "Please configure your API endpoint";
+                curlExample.style.color = "#ff6b6b";
             }
         }
-        
-        // --- EVENT LISTENERS ---
+
+        // Event Listeners
         dropZone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => e.target.files.length && handleFile(e.target.files[0]));
-        
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            if (!dropZone.contains(e.relatedTarget)) {
+                dropZone.classList.remove('dragover');
+            }
+        });
+
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('dragover');
-            e.dataTransfer.files.length && handleFile(e.dataTransfer.files[0]);
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
         });
 
-        // --- FILE HANDLING ---
+        // File Handling
         function handleFile(file) {
             resetUIForNewUpload(file.name);
             const reader = new FileReader();
 
             reader.onload = (e) => {
-                const audio_bytes = e.target.result;
-                // Use btoa for base64 encoding
-                const audio_base64 = btoa(new Uint8Array(audio_bytes).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-                callApi(audio_base64, file.name);
+                const audioBytes = e.target.result;
+                const audioBase64 = btoa(new Uint8Array(audioBytes).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                callApi(audioBase64, file.name);
             };
 
             reader.onerror = (error) => displayError(`File reading failed: ${error}`);
             reader.readAsArrayBuffer(file);
         }
 
-        // --- API CALL ---
+        // API Call
         async function callApi(audioData, fileName) {
             if (!API_INVOKE_URL || API_INVOKE_URL.includes('YOUR_API')) {
-                displayError("API endpoint is not configured in the HTML file.");
+                displayError("API endpoint is not configured");
                 setLoadingState(false);
                 return;
             }
@@ -200,9 +539,8 @@
                 if (!response.ok) {
                     throw new Error(result.detail || result.error || 'Unknown error occurred');
                 }
-                
-                displaySuccess(result);
 
+                displaySuccess(result);
             } catch (error) {
                 console.error('API call error:', error);
                 displayError(`API Call Failed: ${error.message}`);
@@ -211,50 +549,55 @@
             }
         }
 
-        // --- UI UPDATES ---
+        // UI Updates
         function resetUIForNewUpload(name) {
-            statusDisplay.style.color = '#333'; // Reset color
             statusDisplay.textContent = `Processing: ${name}...`;
-            rawAnalysisOutput.textContent = "";
-            ortbRequestOutput.textContent = "";
+            statusDisplay.style.color = '#4facfe';
+            rawAnalysisOutput.textContent = "Processing...";
+            ortbRequestOutput.textContent = "Processing...";
             setLoadingState(true);
+            showResults();
         }
 
         function setLoadingState(isLoading) {
-            uploadText.style.display = isLoading ? 'none' : 'inline-block';
-            spinnerIcon.style.display = isLoading ? 'inline-block' : 'none';
+            uploadIcon.style.display = isLoading ? 'none' : 'block';
+            uploadText.style.display = isLoading ? 'none' : 'block';
+            uploadSubtext.style.display = isLoading ? 'none' : 'block';
+            spinnerIcon.style.display = isLoading ? 'block' : 'none';
         }
-        
+
         function displayError(message) {
             statusDisplay.textContent = `Error: ${message}`;
-            statusDisplay.style.color = 'red';
-            setLoadingState(false);
+            statusDisplay.style.color = '#ff6b6b';
+            rawAnalysisOutput.textContent = "Error occurred during processing";
+            ortbRequestOutput.textContent = "Error occurred during processing";
         }
 
         function displaySuccess(data) {
-            statusDisplay.textContent = 'Analysis Complete!';
-            statusDisplay.style.color = '#333'; // Reset color
+            statusDisplay.textContent = '✅ Analysis Complete!';
+            statusDisplay.style.color = '#4caf50';
 
-            // With REST API + Lambda Proxy, the actual result is often a JSON string inside the 'body' property.
             let resultData = data;
             if (data.body && typeof data.body === 'string') {
                 try {
                     resultData = JSON.parse(data.body);
                 } catch (e) {
                     console.error("Failed to parse body from API response:", e);
-                    displayError("Could not parse response from server.");
+                    displayError("Could not parse response from server");
                     return;
                 }
             }
 
-            // The lambda now returns the full object. We can parse it here.
             rawAnalysisOutput.textContent = JSON.stringify(resultData.audio_analysis, null, 2);
             ortbRequestOutput.textContent = JSON.stringify(resultData.ortb_request, null, 2);
         }
 
-        // --- RUN APP ---
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        function showResults() {
+            resultsSection.classList.add('visible');
+        }
 
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
-</html> 
+</html>
