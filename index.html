@@ -234,9 +234,22 @@
         function displaySuccess(data) {
             statusDisplay.textContent = 'Analysis Complete!';
             statusDisplay.style.color = '#333'; // Reset color
+
+            // With REST API + Lambda Proxy, the actual result is often a JSON string inside the 'body' property.
+            let resultData = data;
+            if (data.body && typeof data.body === 'string') {
+                try {
+                    resultData = JSON.parse(data.body);
+                } catch (e) {
+                    console.error("Failed to parse body from API response:", e);
+                    displayError("Could not parse response from server.");
+                    return;
+                }
+            }
+
             // The lambda now returns the full object. We can parse it here.
-            rawAnalysisOutput.textContent = JSON.stringify(data.audio_analysis, null, 2);
-            ortbRequestOutput.textContent = JSON.stringify(data.ortb_request, null, 2);
+            rawAnalysisOutput.textContent = JSON.stringify(resultData.audio_analysis, null, 2);
+            ortbRequestOutput.textContent = JSON.stringify(resultData.ortb_request, null, 2);
         }
 
         // --- RUN APP ---
