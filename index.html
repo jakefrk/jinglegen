@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JingleGen</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
     <style>
         body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; display: flex; justify-content: center; }
         .app-container { width: 90%; max-width: 1200px; }
@@ -93,8 +94,7 @@
                 <span class="spinner-icon" style="display: none;">🎵</span>
                 <input type="file" id="fileInput" accept="audio/*" style="display: none;"> 
             </div>
-            <p id="fileName"></p> 
-            <p id="userFeedbackStatus"></p>
+            <p id="statusDisplay" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 1.1em; height: 1.2em;"></p>
             
             <!-- Curl Command Display -->
             <div class="curl-command-display">
@@ -124,14 +124,13 @@
     <script>
         // --- CONFIGURATION ---
         // IMPORTANT: Replace these placeholders with your actual API Gateway details
-        const API_INVOKE_URL = 'https://jinglegen.com/analyze'; 
+        const API_INVOKE_URL = 'https://api.jinglegen.com/analyze'; 
         const API_KEY = 'cdUPQUUBW63nwZf9S4B598t7VQVuDuyU64aFoohL'; /* im aware this is in here */
 
         // --- DOM ELEMENTS ---
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const fileNameDisplay = document.getElementById('fileName');
-        const userFeedbackStatus = document.getElementById('userFeedbackStatus');
+        const statusDisplay = document.getElementById('statusDisplay');
         const rawAnalysisOutput = document.getElementById('rawAnalysisOutput');
         const ortbRequestOutput = document.getElementById('ortbRequestOutput');
         const curlExample = document.getElementById('curlExample');
@@ -215,8 +214,8 @@
 
         // --- UI UPDATES ---
         function resetUIForNewUpload(name) {
-            fileNameDisplay.textContent = `Processing: ${name}`;
-            userFeedbackStatus.textContent = "Analyzing...";
+            statusDisplay.style.color = '#333'; // Reset color
+            statusDisplay.textContent = `Processing: ${name}...`;
             rawAnalysisOutput.textContent = "";
             ortbRequestOutput.textContent = "";
             setLoadingState(true);
@@ -228,13 +227,15 @@
         }
         
         function displayError(message) {
-            userFeedbackStatus.textContent = 'Error!';
+            statusDisplay.textContent = 'Error!';
+            statusDisplay.style.color = 'red';
             ortbRequestOutput.textContent = message;
             rawAnalysisOutput.textContent = message;
         }
 
         function displaySuccess(data) {
-            userFeedbackStatus.textContent = 'Analysis Complete!';
+            statusDisplay.textContent = 'Analysis Complete!';
+            statusDisplay.style.color = '#333'; // Reset color
             // The lambda now returns the full object. We can parse it here.
             rawAnalysisOutput.textContent = JSON.stringify(data.audio_analysis, null, 2);
             ortbRequestOutput.textContent = JSON.stringify(data.ortb_request, null, 2);
