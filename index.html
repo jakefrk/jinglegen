@@ -104,7 +104,7 @@
 
         <div class="results-container">
             <div class="results-column" id="analysisResultsArea">
-                <h2>Raw Audio Analysis:</h2>
+                <h2>Audio Analysis:</h2>
                 <pre id="rawAnalysisOutput"></pre>
             </div>
             <div class="results-column" id="ortbRequestArea">
@@ -112,17 +112,17 @@
                 <pre id="ortbRequestOutput"></pre>
             </div>
         </div>
-        <p style="text-align: center; margin-top: 30px; font-size: 0.85em; color: #555;">
+        <p style="text-align: left; margin-top: 30px; font-size: 0.65em; color: #666;">
             Don't have a sound file? Grab one from <a href="https://pixabay.com/music/search/open%20source/" target="_blank" rel="noopener noreferrer">here</a>.
             <br>
             <hr>
-            <smalL>https://github.com/jakefrk/jinglegen</smalL>
+            <smalL style="text-align: center">https://github.com/jakefrk/jinglegen</smalL>
         </p>
     </div>
 
     <script>
+        console.log("--- JINGLEGEN JS (v2) ---");
         // --- CONFIGURATION ---
-        // IMPORTANT: Replace these placeholders with your actual API Gateway details
         const API_INVOKE_URL = 'https://api.jinglegen.com/analyze'; 
         const API_KEY = 'cdUPQUUBW63nwZf9S4B598t7VQVuDuyU64aFoohL'; /* im aware this is in here */
 
