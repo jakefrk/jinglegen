@@ -394,12 +394,13 @@
         <section class="upload-section">
             <div class="upload-card">
                 <div class="upload-area" id="dropZone">
-                    <div class="upload-content">
-                        <span class="upload-icon">🎧</span>
-                        <div class="upload-text">Drop your audio file here</div>
-                        <div class="spinner-icon" style="display: none;">🎵</div>
-                    </div>
                     <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+                    <div class="upload-content" id="uploadContent">
+                        <span class="upload-icon">🎵</span>
+                        <div class="upload-text">Drop Audio File Here</div>
+                        <div class="upload-subtext">or click to browse</div>
+                    </div>
+                    <div class="spinner-icon" style="display: none;"></div>
                 </div>
                 <div class="status-display" id="statusDisplay">
                     Only the first 10 seconds of audio will be analyzed. If an error occurs on first upload, please retry (restarts cold start timeout).
@@ -459,11 +460,12 @@
         const rawAnalysisOutput = document.getElementById('rawAnalysisOutput');
         const ortbRequestOutput = document.getElementById('ortbRequestOutput');
         const curlExample = document.getElementById('curlExample');
+        const uploadContent = document.getElementById('uploadContent');
+        const spinnerIcon = dropZone.querySelector('.spinner-icon');
         const resultsSection = document.getElementById('resultsSection');
         const uploadIcon = dropZone.querySelector('.upload-icon');
         const uploadText = dropZone.querySelector('.upload-text');
         const uploadSubtext = dropZone.querySelector('.upload-subtext');
-        const spinnerIcon = dropZone.querySelector('.spinner-icon');
 
         // Initialization
         function initializeApp() {
@@ -552,18 +554,23 @@
         // UI Updates
         function resetUIForNewUpload(name) {
             statusDisplay.textContent = `Processing: ${name}...`;
-            statusDisplay.style.color = '#4facfe';
-            rawAnalysisOutput.textContent = "Processing...";
-            ortbRequestOutput.textContent = "Processing...";
+            rawAnalysisOutput.textContent = "";
+            ortbRequestOutput.textContent = "";
+            resultsSection.classList.remove('visible');
             setLoadingState(true);
-            showResults();
         }
 
         function setLoadingState(isLoading) {
-            uploadIcon.style.display = isLoading ? 'none' : 'block';
-            uploadText.style.display = isLoading ? 'none' : 'block';
-            uploadSubtext.style.display = isLoading ? 'none' : 'block';
-            spinnerIcon.style.display = isLoading ? 'block' : 'none';
+            const uploader = document.getElementById('uploadContent');
+            const spinner = document.querySelector('.spinner-icon');
+
+            if (isLoading) {
+                uploader.style.display = 'none';
+                spinner.style.display = 'block';
+            } else {
+                uploader.style.display = 'block';
+                spinner.style.display = 'none';
+            }
         }
 
         function displayError(message) {
